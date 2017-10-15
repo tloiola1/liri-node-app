@@ -134,10 +134,38 @@ function spotify(){
     message: "What is the name of the song."
   }
 ]).then(function(music) {
-  print(music.name)
+  var Spotify = require('node-spotify-api');
+
+  var spotify = new Spotify({
+    id: '4670ff7786ec4809a6a9dc14093332f7',
+    secret: '6bf380396c0d4815ba30a6b2cef8fd22'
+  });
+  getMusic(music.name)
+
+  function getMusic(_music_name){
+    spotify.search({ type: 'track', query: _music_name }, function(err, data) {
+      if (err) {
+        return console.log('Error occurred: ' + err);
+      }
+      if(data.tracks.items[0].artists[0].name === undefined){
+        print("Good");
+        getMusic("The Sign");
+      }
+        else{
+          //Artist(s)
+          print("Artist: "+data.tracks.items[0].artists[0].name);
+          //The song's name
+          print("Song: "+data.tracks.items[0].name);
+          //A preview link of the song from Spotify
+          print("Spotify link: "+data.tracks.items[0].preview_url);
+          //The album that the song is from
+          print("Album: "+data.tracks.items[0].album.name);
+          //If no song is provided then your program will default to "The Sign" by Ace of Base.
+        }
+    });
+  }
 });
 };
-
 function movie_this(){
   inquirer.prompt([
   {
@@ -146,7 +174,53 @@ function movie_this(){
     message: "What is the name of the movie?"
   }
 ]).then(function(movie) {
-  print(movie.name);
+  var request = require("request");
+
+  movie.name = movie.name.replace(/\s+/g, '+');
+  getMovie(movie.name);
+
+  function getMovie(_movie_name){
+  //Request https of the chosen movie
+  request("http://www.omdbapi.com/?t="+_movie_name+"&y=&plot=short&apikey=40e9cece", function(error, response, body) {
+  // If the request is successful (i.e. if the response status code is 200)
+  if (!error && response.statusCode === 200) {
+    //This condition checks if the movie is undefined or no user input is found.
+    if (JSON.parse(body).Title === undefined) {
+      getMovie("Mr.+Nobody");
+    }
+    else{
+    // Title of the movie.
+    print("Movie: " + JSON.parse(body).Title);
+    //Year the movie came out.
+    print("Released: " + JSON.parse(body).Released);
+    //IMDB Rating of the movie.
+    print("IMDB Rating: " + JSON.parse(body).imdbRating);
+    //Rotten Tomatoes Rating of the movie.
+    var rating = checkForRating(JSON.parse(body).Ratings);
+    print("Rotten Tomatoes Rating: " + rating);
+    //Country where the movie was produced.
+    print("Country: " + JSON.parse(body).Country);
+    //Language of the movie.
+    print("Language: " + JSON.parse(body).Language);
+    //Plot of the movie.
+    print("Plot: " + JSON.parse(body).Plot);
+    //Actors in the movie.
+    print("Actors: " + JSON.parse(body).Actors);
+  }
+  function checkForRating(ratings){
+    //Loop through array Ratings searching SourceKey value of "Rotten Tomatoes"...
+    for (var i = 0; i < ratings.length; i++) {
+      //If SourceKey is found...
+      if(ratings[i].Source === 'Rotten Tomatoes'){
+        //It will then get the value of the ValueKey and return to the caller.
+        var checked = ratings[i].Value;
+        return checked;
+      }
+    }
+  }
+  }
+});
+}
 });
 };
 
@@ -154,10 +228,25 @@ function do_what_it_says(){
   print("do-what-it-says");
 };
 
+});
+// for (var i = 0; i < data.tracks.items.length; i++) {
+      // arr.push(data.tracks.items[0].artists[0].name); 
+//     }
+//     //Remove duplicate artists
+//     let array = Array.from(new Set(arr));
 
+// inquirer.prompt([
+//   {
+//     type: "list",
+//     name: "option",
+//     message: "I have found "+array.length+" different artists. Choose one.",
+//     choices: [array]
+//   }
 
+// ]).then(function(_artist) {
+//   print(_artist);
+// });
 
-  });
 //    * `my-tweets`
 
 //    * `spotify-this-song`
@@ -219,14 +308,7 @@ function do_what_it_says(){
 //        * Actors in the movie.
 //      ```
 
-//    * If the user doesn't type a movie in, the program will output data for the movie 'Mr. Nobody.'
-     
-//      * If you haven't watched "Mr. Nobody," then you should: <http://www.imdb.com/title/tt0485947/>
-     
-//      * It's on Netflix!
-   
-//    * You'll use the request package to retrieve data from the OMDB API. Like all of the in-class activities, 
-// the OMDB API requires an API key. You may use `40e9cece`.
+
 
 // 4. `node liri.js do-what-it-says`
    

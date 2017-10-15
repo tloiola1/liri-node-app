@@ -6,4 +6,5 @@ var client = new Twitter({
   access_token_key: '282661299-TSJY7PXcieereA7TfwgNuE8D5Ya4aMk7hsCbDbym',
   access_token_secret: 'UczFz6AGxHvqEdZWMp4n65EyCOrSF5PD1iAtTsj0J6B4u'
 });
+
  module.exports = twitterKeys;
