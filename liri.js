@@ -1,37 +1,4 @@
 // # liri-node-app
-
-// # LIRI Bot
-
-// ### Overview
-
-// In this assignment, you will make LIRI. LIRI is like iPhone's SIRI. However, while SIRI is a Speech Interpretation and 
-// Recognition Interface, LIRI is a _Language_ Interpretation and Recognition Interface. LIRI will be a command line node 
-// app that takes in parameters and gives you back data.
-
-// ### Before You Begin
-
-// 1. LIRI will display your latest tweets. As we do not want to display your personal account, or its keys, please make 
-// an alias account and add a few tweets to it!
-
-// 2. Make a new GitHub repository called liri-node-app and clone it to your computer.
-
-// 3. To retrieve the data that will power this app, you'll need to send requests to the Twitter, Spotify and OMDB APIs. 
-// You'll find these Node packages crucial for your assignment.
-
-//    * [Twitter](https://www.npmjs.com/package/twitter)
-   
-//    * [Spotify](https://www.npmjs.com/package/node-spotify-api)
-   
-//    * [Request](https://www.npmjs.com/package/request)
-     
-//      * You'll use Request to grab data from the [OMDB API](http://www.omdbapi.com).
-
-// ### Instructions
-
-// 1. Initialize a `package.json` file at your project root. Be sure to save all of the npm packages you'll be using to 
-// this file. If you fail to initialize a `package.json` file and save your dependencies to it, it will be troublesome, 
-// and at times almost impossible for anyone else to run your code.
-
 // 2. Make a .gitignore file and add the following lines to it. This will tell git not to track these files, and thus they 
 // won't be committed to Github.
 
@@ -94,7 +61,6 @@ inquirer.prompt([
     message: "Choose one of the following options.",
     choices: ["my-tweets", "spotify-this-song", "movie-this", "do-what-it-says"]
   }
-
 ]).then(function(user) {
 
   switch(user.option){
@@ -102,7 +68,7 @@ inquirer.prompt([
       my_tweets();
       break;
     case "spotify-this-song":
-      spotify();
+      spotify_this_song();
       break;
     case "movie-this":
       movie_this();
@@ -111,7 +77,7 @@ inquirer.prompt([
       do_what_it_says();
       break;
   }
-
+});
 
 function my_tweets(){
   inquirer.prompt([
@@ -121,114 +87,174 @@ function my_tweets(){
     message: "Are you sure you want to read my tweets?",
     default: true
   }
-]).then(function(tweet) {
-  print(tweet.default);
-});
+  ]).then(function(tweet) {
+    if(tweet){
+      var Twitter = require('twitter');
+ 
+      var client = new Twitter({
+        consumer_key: client.consumer_key,
+        consumer_secret: client.consumer_secret,
+        access_token_key: client.access_token_key,
+        access_token_secret: client.access_token_secret
+      });
+       
+      var params = {screen_name: 'nodejs'};
+      client.get('statuses/user_timeline', params, function(error, tweets, response) {
+        if (!error) {
+          print(tweets[19]);
+        }
+      });
+    }
+  });
 };
 
-function spotify(){
+function spotify_this_song(){
   inquirer.prompt([
   {
     type: "input",
     name: "name",
     message: "What is the name of the song."
   }
-]).then(function(music) {
-  var Spotify = require('node-spotify-api');
+  ]).then(function(music) {
+    var Spotify = require('node-spotify-api');
 
-  var spotify = new Spotify({
-    id: '4670ff7786ec4809a6a9dc14093332f7',
-    secret: '6bf380396c0d4815ba30a6b2cef8fd22'
-  });
-  getMusic(music.name)
-
-  function getMusic(_music_name){
-    spotify.search({ type: 'track', query: _music_name }, function(err, data) {
-      if (err) {
-        return console.log('Error occurred: ' + err);
-      }
-      if(data.tracks.items[0].artists[0].name === undefined){
-        print("Good");
-        getMusic("The Sign");
-      }
-        else{
-          //Artist(s)
-          print("Artist: "+data.tracks.items[0].artists[0].name);
-          //The song's name
-          print("Song: "+data.tracks.items[0].name);
-          //A preview link of the song from Spotify
-          print("Spotify link: "+data.tracks.items[0].preview_url);
-          //The album that the song is from
-          print("Album: "+data.tracks.items[0].album.name);
-          //If no song is provided then your program will default to "The Sign" by Ace of Base.
-        }
+    var spotify = new Spotify({
+      id: '4670ff7786ec4809a6a9dc14093332f7',
+      secret: '6bf380396c0d4815ba30a6b2cef8fd22'
     });
-  }
-});
+    getMusic(music.name)
+
+    function getMusic(_music_name){
+      if (_music_name === '') {
+        _music_name = 'The Sign';//**************************************
+      }
+      spotify.search({ type: 'track', query: _music_name }, function(err, data) {
+        if (err) {
+          return console.log('Error occurred: ' + err);
+        }
+            //Artist(s)
+            print("Artist: "+data.tracks.items[0].artists[0].name);
+            //The song's name
+            print("Song: "+data.tracks.items[0].name);
+            //A preview link of the song from Spotify
+            print("Spotify link: "+data.tracks.items[0].preview_url);
+            //The album that the song is from
+            print("Album: "+data.tracks.items[0].album.name);
+            //If no song is provided then your program will default to "The Sign" by Ace of Base.
+      });
+    }
+  });
 };
+
 function movie_this(){
   inquirer.prompt([
-  {
-    type: "input",
-    name: "name",
-    message: "What is the name of the movie?"
-  }
-]).then(function(movie) {
-  var request = require("request");
-
-  movie.name = movie.name.replace(/\s+/g, '+');
-  getMovie(movie.name);
-
-  function getMovie(_movie_name){
-  //Request https of the chosen movie
-  request("http://www.omdbapi.com/?t="+_movie_name+"&y=&plot=short&apikey=40e9cece", function(error, response, body) {
-  // If the request is successful (i.e. if the response status code is 200)
-  if (!error && response.statusCode === 200) {
-    //This condition checks if the movie is undefined or no user input is found.
-    if (JSON.parse(body).Title === undefined) {
-      getMovie("Mr.+Nobody");
+    {
+      type: "input",
+      name: "name",
+      message: "What is the name of the movie?"
     }
-    else{
-    // Title of the movie.
-    print("Movie: " + JSON.parse(body).Title);
-    //Year the movie came out.
-    print("Released: " + JSON.parse(body).Released);
-    //IMDB Rating of the movie.
-    print("IMDB Rating: " + JSON.parse(body).imdbRating);
-    //Rotten Tomatoes Rating of the movie.
-    var rating = checkForRating(JSON.parse(body).Ratings);
-    print("Rotten Tomatoes Rating: " + rating);
-    //Country where the movie was produced.
-    print("Country: " + JSON.parse(body).Country);
-    //Language of the movie.
-    print("Language: " + JSON.parse(body).Language);
-    //Plot of the movie.
-    print("Plot: " + JSON.parse(body).Plot);
-    //Actors in the movie.
-    print("Actors: " + JSON.parse(body).Actors);
-  }
-  function checkForRating(ratings){
-    //Loop through array Ratings searching SourceKey value of "Rotten Tomatoes"...
-    for (var i = 0; i < ratings.length; i++) {
-      //If SourceKey is found...
-      if(ratings[i].Source === 'Rotten Tomatoes'){
-        //It will then get the value of the ValueKey and return to the caller.
-        var checked = ratings[i].Value;
-        return checked;
-      }
+  ]).then(function(movie) {
+        var request = require("request");
+
+        movie.name = movie.name.replace(/\s+/g, '+');
+        getMovie(movie.name);
+
+        function getMovie(_movie_name){
+        //Request https of the chosen movie
+        request("http://www.omdbapi.com/?t="+_movie_name+"&y=&plot=short&apikey=40e9cece", function(error, response, body) {
+        // If the request is successful (i.e. if the response status code is 200)
+        if (!error && response.statusCode === 200) {
+          //This condition checks if the movie is undefined or no user input is found.
+          if (JSON.parse(body).Title === undefined) {
+            getMovie("Mr.+Nobody");
+          }
+          else{
+            // Title of the movie.
+            print("Movie: " + JSON.parse(body).Title);
+            //Year the movie came out.
+            print("Released: " + JSON.parse(body).Released);
+            //IMDB Rating of the movie.
+            print("IMDB Rating: " + JSON.parse(body).imdbRating);
+            //Rotten Tomatoes Rating of the movie.
+            var rating = checkForRating(JSON.parse(body).Ratings);
+            print("Rotten Tomatoes Rating: " + rating);
+            //Country where the movie was produced.
+            print("Country: " + JSON.parse(body).Country);
+            //Language of the movie.
+            print("Language: " + JSON.parse(body).Language);
+            //Plot of the movie.
+            print("Plot: " + JSON.parse(body).Plot);
+            //Actors in the movie.
+            print("Actors: " + JSON.parse(body).Actors);
+          }
+          function checkForRating(ratings){
+            //Loop through array Ratings searching SourceKey value of "Rotten Tomatoes"...
+                for (var i = 0; i < ratings.length; i++) {
+                  //If SourceKey is found...
+                  if(ratings[i].Source === 'Rotten Tomatoes'){
+                    //It will then get the value of the ValueKey and return to the caller.
+                    var checked = ratings[i].Value;
+                    return checked;
+                  }
+                }
+          }
+        }
+
+      });
     }
-  }
-  }
-});
-}
-});
+  });
 };
 
 function do_what_it_says(){
-  print("do-what-it-says");
+
+  //    * Using the `fs` Node package, LIRI will take the text inside of random.txt and then use it to call one of 
+  // LIRI's commands.
+  var fs = require("fs");
+
+  // Running the readFile module that's inside of fs.
+  // Stores the read information into the variable "data"
+  fs.readFile("random.txt", "utf8", function(err, data) {
+    var array = [];
+    if (err) {
+      return console.log(err);
+    }
+
+    // Break the string down by comma separation and store the contents into the output array.
+    var output_random = data.split(",");
+    var liri_chose = output_random[Math.floor(Math.random()*output_random.length)];
+
+    if(liri_chose === 'my-tweets'){
+      print("Liri said: 'Read my tweets.'");
+      my_tweets();
+    }
+    else if(liri_chose === 'spotify-this-song'){
+      fs.readFile("spotify.txt", "utf8", function(err, data) {
+        if (err) {
+          return console.log(err);
+        }
+        var output_spotify = data.split(",");
+        var music = output_spotify[Math.floor(Math.random()*output_spotify.length)];
+        print("Liri said: 'Listen to "+ music +"'");
+        getMusic(music); 
+      });
+    }
+    else if(liri_chose === 'movie-this'){
+      fs.readFile("movie.txt", "utf8", function(err, data) {
+        if (err) {
+          return console.log(err);
+        }
+        var output_movie = data.split(",");
+        var movie = output_movie[Math.floor(Math.random()*output_movie.length)];
+        print("Liri said: 'Watch "+ movie +"'");
+        getMovie(movie);
+      });
+    }
+  });
 };
 
-});
+function print(object){
+  console.log(object);
+}
 // for (var i = 0; i < data.tracks.items.length; i++) {
       // arr.push(data.tracks.items[0].artists[0].name); 
 //     }
@@ -247,107 +273,11 @@ function do_what_it_says(){
 //   print(_artist);
 // });
 
-//    * `my-tweets`
-
-//    * `spotify-this-song`
-
-//    * `movie-this`
-
-//    * `do-what-it-says`
-
-// ### What Each Command Should Do
-
-// 1. `node liri.js my-tweets`
 
 //    * This will show your last 20 tweets and when they were created at in your terminal/bash window.
-
-// 2. `node liri.js spotify-this-song '<song name here>'`
-
-//    * This will show the following information about the song in your terminal/bash window
-     
-//      * Artist(s)
-     
-//      * The song's name
-     
-//      * A preview link of the song from Spotify
-     
-//      * The album that the song is from
-
-//    * If no song is provided then your program will default to "The Sign" by Ace of Base.
-   
-//    * You will utilize the [node-spotify-api](https://www.npmjs.com/package/node-spotify-api) package in order to 
-// retrieve song information from the Spotify API.
-   
-//    * Like the Twitter API, the Spotify API requires you sign up as a developer to generate the necessary credentials. 
-// You can follow these steps in order to generate a **client id** and **client secret**:
-
-//    * Step One: Visit <https://developer.spotify.com/my-applications/#!/>
-   
-//    * Step Two: Either login to your existing Spotify account or create a new one (a free account is fine) and log in.
-
-//    * Step Three: Once logged in, navigate to <https://developer.spotify.com/my-applications/#!/applications/create> 
-// to register a new application to be used with the Spotify API. You can fill in whatever you'd like for these fields. 
-// When finished, click the "complete" button.
-
-//    * Step Four: On the next screen, scroll down to where you see your client id and client secret. Copy these values 
-// down somewhere, you'll need them to use the Spotify API and the 
-// [node-spotify-api package](https://www.npmjs.com/package/node-spotify-api). See the 
-
-// 3. `node liri.js movie-this '<movie name here>'`
-
-//    * This will output the following information to your terminal/bash window:
-
-//      ```
-//        * Title of the movie.
-//        * Year the movie came out.
-//        * IMDB Rating of the movie.
-//        * Rotten Tomatoes Rating of the movie.
-//        * Country where the movie was produced.
-//        * Language of the movie.
-//        * Plot of the movie.
-//        * Actors in the movie.
-//      ```
-
-
-
-// 4. `node liri.js do-what-it-says`
-   
-//    * Using the `fs` Node package, LIRI will take the text inside of random.txt and then use it to call one of 
-// LIRI's commands.
-     
-//      * It should run `spotify-this-song` for "I Want it That Way," as follows the text in `random.txt`.
-     
-//      * Feel free to change the text in that document to test out the feature for other commands.
-
-// ### BONUS
 
 // * In addition to logging the data to your terminal/bash window, output the data to a .txt file called `log.txt`.
 
 // * Make sure you append each command you run to the `log.txt` file. 
 
 // * Do not overwrite your file each time you run a command.
-
-// - - -
-
-// ### Minimum Requirements
-
-// Attempt to complete homework assignment as described in instructions. If unable to complete certain portions, 
-// please pseudocode these portions to describe what remains to be completed.
-
-// - - -
-
-// ### One More Thing
-
-// If you have any questions about this project or the material we have covered, please post them in the community 
-// channels in slack so that your fellow developers can help you! If you're still having trouble, you can come to 
-// office hours for assistance from your instructor and TAs.
-
-// **Good Luck!**
-
-// ## Copyright
-
-// Coding Boot Camp (C) 2016. All Rights Reserved.
-
-function print(object){
-  console.log(object);
-}
