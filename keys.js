@@ -8,3 +8,11 @@ var client = new Twitter({
 });
 
  module.exports = twitterKeys;
+
+//  Spotify
+
+// Client ID
+// 4670ff7786ec4809a6a9dc14093332f7
+
+// Client Secret
+// 6bf380396c0d4815ba30a6b2cef8fd22
