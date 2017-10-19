@@ -1,3 +1,6 @@
+var arg = process.argv[2];
+if(arg === -1 || arg === undefined){
+	
 //Node package for reading and writing files
 var fs = require("fs");
 //Node package Inquirer
@@ -51,6 +54,11 @@ inquirer.prompt([
       break;
   }
 });
+}
+else {
+	print('\nDear Instructor, in your terminal you should only input "node liri.js" to run the program.'
+			+'\nThanks');
+}
 //My Tweets Function
 function my_tweets(_tweet){
   if(_tweet === true){
@@ -84,26 +92,66 @@ function spotify_this_song(_music){
     secret: '6bf380396c0d4815ba30a6b2cef8fd22'
   });
   if (_music === '') {
-    _music = 'The Sign';//**************************************
+    _music = 'the sign';//**************************************
   }
   //Append music to the log.text
   log(_music);
   //Spotify to search for selected music
   spotify.search({ type: 'track', query: _music }, function(err, data) {
+
     //Throw an error if no music is found
     if (err) {
-      return console.log('Error occurred: ' + err);
+      return print('Error occurred: ' + err);
     }
-    //Print all the required info about music
-    //Artist(s)
-    print("Artist: "+data.tracks.items[0].artists[0].name);
-    //The song's name
-    print("Song: "+data.tracks.items[0].name);
-    //A preview link of the song from Spotify
-    print("Spotify link: "+data.tracks.items[0].preview_url);
-    //The album that the song is from
-    print("Album: "+data.tracks.items[0].album.name);
-    //If no song is provided then your program will default to "The Sign" by Ace of Base.
+    //Array to get names of all artists with same song name
+    var array_names = [];
+    //Looping to get the artists names
+    for (var i = 0; i < data.tracks.items.length; i++) {
+    	array_names.push(data.tracks.items[i].artists[0].name);
+    }
+    //This function eliminates duplicated names and assign to new array
+    let new_array_names = Array.from(new Set(array_names));
+    //Sort array for better user experience
+    new_array_names.sort();
+    //Only if there are more the one artist with same song name this condition will execute
+    if(new_array_names.length > 1){
+	    inquirer.prompt([
+		  {
+		    type: "list",
+		    name: "option",
+		    message: "Which one do you want to listen to?",
+		    choices: new_array_names
+		  }
+		  ]).then(function(artist) {
+		  	// print(artist.option);
+		  	for (var i = 0; i < data.tracks.items.length; i++) {
+		  		if(data.tracks.items[i].artists[0].name === artist.option){
+    				var index = i;
+		  		}
+    		}
+
+		    //Print all the required info about music
+		    //Artist(s)
+		    print("Artist: "+data.tracks.items[index].artists[0].name);
+		    //The song's name
+		    print("Song: "+data.tracks.items[index].name);
+		    //A preview link of the song from Spotify
+		    print("Spotify link: "+data.tracks.items[index].preview_url);
+		    //The album that the song is from
+		    print("Album: "+data.tracks.items[index].album.name);
+		});
+	}
+	else{
+		//Print all the required info about music if there is only one artist with song name
+	    //Artist(s)
+	    print("Artist: "+data.tracks.items[0].artists[0].name);
+	    //The song's name
+	    print("Song: "+data.tracks.items[0].name);
+	    //A preview link of the song from Spotify
+	    print("Spotify link: "+data.tracks.items[0].preview_url);
+	    //The album that the song is from
+	    print("Album: "+data.tracks.items[0].album.name);
+	}
   });
 };
 //Movie Function
@@ -168,7 +216,7 @@ function do_what_it_says(){
   fs.readFile("random.txt", "utf8", function(err, data) {
     var array = [];
     if (err) {
-      return console.log(err);
+      return print(err);
     }
 
     // Break the string down by comma separation and store the contents into the output_random array.
@@ -186,7 +234,7 @@ function do_what_it_says(){
       fs.readFile("spotify.txt", "utf8", function(err, data) {
         //Throw error if not meet condition
         if (err) {
-          return console.log(err);
+          return print(err);
         }
         // Break the string down by comma separation and store the contents into the output_spotify array.
         var output_spotify = data.split(",");
@@ -203,7 +251,7 @@ function do_what_it_says(){
       fs.readFile("movie.txt", "utf8", function(err, data) {
         //Throw error if not meet condition
         if (err) {
-          return console.log(err);
+          return print(err);
         }
         // Break the string down by comma separation and store the contents into the output_movie array.
         var output_movie = data.split(",");
@@ -221,7 +269,7 @@ function log(value) {
   // We will add the value to the log file.
   fs.appendFile("log.txt", ", " + value, function(err) {
     if (err) {
-      return console.log(err);
+      return print(err);
     }
   });
 }
